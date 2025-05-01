@@ -68,14 +68,15 @@ export default function App() {
       sx={{
         display: 'flex',
         flexDirection: { xs: 'column', md: 'row' },
-        alignItems: 'center',
+        alignItems: 'flex-start', // better than center for top alignment
         bgcolor: 'background.paper',
         overflow: 'hidden',
         borderRadius: '12px',
         boxShadow: 1,
         fontWeight: 'bold',
+        height: '100vh', // Make the layout take up the full viewport height
       }}>
-
+  
       {/* fix 1.d: add status sorting */}
       <Box sx={{ margin: 2, minWidth: 200 }}>
         <Typography variant="h6" color="textPrimary" gutterBottom>
@@ -95,38 +96,43 @@ export default function App() {
           </Select>
         </FormControl>
       </Box>
-      <Grid container spacing={10}>
-        {todos && todos
-        .filter(todo => todo.status === sortOption || sortOption === "[All]") // Filter based on status
-        .sort((a, b) => {
-          const dateA = new Date(a.creationTime).getTime();
-          const dateB = new Date(b.creationTime).getTime();
-          return dateA - dateB;  // Ascending sort by creation time
-        })
-        .map((todo, index) => (
-          <Grid item xs={10} key={todo.id ?? index}>
-            <Card >
-              <CardContent>
-                <Typography color="textPrimary" gutterBottom>
-                  {todo.title}
-                </Typography>
-                <Typography variant="body2" color="textSecondary" component="p">
-                  {new Date(todo.creationTime).toLocaleDateString()}
-                </Typography>
-                <Typography variant="body2" color="textSecondary" component="p">
-                  {todo.status}
-                </Typography>
-                {/* fix 1.c: Display the content of the Todo */}
-                 <Typography variant="body1" color="textPrimary" component="p" sx={{ marginTop: 2 }}>
-                   {todo.content}
-                 </Typography>
-              </CardContent>
-            </Card>
-          </Grid>))}
-      </Grid>
+  
+      {/* fix 1.b: Grid displaying the sorted TODO items */}
+      <Box sx={{ flexGrow: 1, overflowY: 'auto', maxHeight: '100vh', p: 2 }}>
+        <Grid container spacing={10}>
+          {todos && todos
+            .filter(todo => todo.status === sortOption || sortOption === "[All]") // Filter based on status
+            .sort((a, b) => {
+              const dateA = new Date(a.creationTime).getTime();
+              const dateB = new Date(b.creationTime).getTime();
+              return dateA - dateB;  // Ascending sort by creation time
+            })
+            .map((todo, index) => (
+              <Grid item xs={10} key={todo.id ?? index}>
+                <Card>
+                  <CardContent>
+                    <Typography color="textPrimary" gutterBottom>
+                      {todo.title}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary" component="p">
+                      {new Date(todo.creationTime).toLocaleDateString()}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary" component="p">
+                      {todo.status}
+                    </Typography>
+                    {/* fix 1.c: Display the content of the Todo */}
+                    <Typography variant="body1" color="textPrimary" component="p" sx={{ marginTop: 2 }}>
+                      {todo.content}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+        </Grid>
+      </Box>
     </Box>
-    
   );
+  
 }
 
 

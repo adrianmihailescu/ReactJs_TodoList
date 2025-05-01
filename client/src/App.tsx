@@ -46,8 +46,8 @@ export default function App() {
         fontWeight: 'bold',
       }}>
       <Grid container spacing={10}>
-        {todos && todos.map((todo) => (
-          <Grid item xs={10}>
+        {todos && todos.map((todo, index) => (
+          <Grid item xs={10} key={todo.id ?? index}>
             <Card >
               <CardContent>
                 <Typography color="textPrimary" gutterBottom>

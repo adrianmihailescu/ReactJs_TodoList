@@ -1,10 +1,11 @@
 
 import React, { useEffect, useState } from 'react';
-import { Box } from '@mui/system';
+import { border, Box } from '@mui/system';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
+import Pagination from '@mui/material/Pagination';
 
 import { Todo } from './models/todo';
 import './App.css';
@@ -20,6 +21,8 @@ export default function App() {
   const [todos, setTodos] = useState<Todo[]>([]);
   let sortedTodos = todos;
   const [sortOption, setSortOption] = useState<string>('[All]'); // fix 1d
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10; // fix 1.f: Pagination items per page
   // const classes = useStyles();
 
   useEffect(() => {
@@ -57,10 +60,10 @@ export default function App() {
             const dateB = new Date(b.creationTime).getTime();
             return dateA - dateB;  // Ascending sort by creation time
           }); // fix 1.d
+  };
 
-    console.log("todos:", todos);
-    console.log("Sort Option:", event.target.value);
-    console.log("Sorted Todos:", sortedTodos);
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, page: number) => {
+    setCurrentPage(page); // fix 1.f: Update page number
   };
 
   return (
@@ -98,8 +101,8 @@ export default function App() {
       </Box>
   
       {/* fix 1.b: Grid displaying the sorted TODO items */}
-      <Box sx={{ flexGrow: 1, overflowY: 'auto', maxHeight: '100vh', p: 2 }}>
-        <Grid container spacing={10}>
+      <Box sx={{ flexGrow: 1, overflowY: 'auto', maxHeight: '100vh', p: 1 }}>
+        <Grid container rowSpacing={0} columnSpacing={1.25}>
           {todos && todos
             .filter(todo => todo.status === sortOption || sortOption === "[All]") // Filter based on status
             .sort((a, b) => {
@@ -107,10 +110,23 @@ export default function App() {
               const dateB = new Date(b.creationTime).getTime();
               return dateA - dateB;  // Ascending sort by creation time
             })
+            .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage) // paginate
             .map((todo, index) => (
               <Grid item xs={10} key={todo.id ?? index}>
-                <Card>
-                  <CardContent>
+                 {/* fix 1.i: Fixed height card */}
+                <Card sx={{
+                  maxHeight: 100, display: 'flex', flexDirection: 'column', border: '1px solid black', borderRadius: '8px', marginBottom: 2 }}>
+                  <CardContent sx={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  padding: 1,
+                  '&:hover': {
+                    backgroundColor: '#f0f0f0',
+                    cursor: 'pointer',
+                  },
+                }}>
+                  {(currentPage - 1) * 10 + index+1}
                     <Typography color="textPrimary" gutterBottom>
                       {todo.title}
                     </Typography>
@@ -126,9 +142,22 @@ export default function App() {
                     </Typography>
                   </CardContent>
                 </Card>
+                <Typography variant="subtitle1" color="textSecondary" sx={{ mt: 2 }}>
+              </Typography>
               </Grid>
             ))}
         </Grid>
+          {/* fix 1.f: Pagination control */}
+  <Box sx={{ display: 'flex', justifyContent: 'center'}}>
+    <Pagination
+      count={Math.ceil(
+        todos.filter(todo => todo.status === sortOption || sortOption === "[All]").length / itemsPerPage
+      )}
+      page={currentPage}
+      onChange={handlePageChange}
+      color="primary"      
+    />
+  </Box>
       </Box>
     </Box>
   );

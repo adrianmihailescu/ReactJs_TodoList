@@ -8,10 +8,18 @@ import Grid from '@mui/material/Grid';
 
 import { Todo } from './models/todo';
 import './App.css';
+// import { SelectChangeEvent } from '@mui/material';
+
+import FormControl from '@mui/material/FormControl';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import InputLabel from '@mui/material/InputLabel';
 
 
 export default function App() {
   const [todos, setTodos] = useState<Todo[]>([]);
+  let sortedTodos = todos;
+  const [sortOption, setSortOption] = useState<string>('[All]'); // fix 1d
   // const classes = useStyles();
 
   useEffect(() => {
@@ -33,6 +41,28 @@ export default function App() {
     return body;
   };
 
+    // Handle the change in the dropdown for status sorting 
+  // fix 1.d add status
+  const handleSortChange = (event: SelectChangeEvent<string>) => {
+    setSortOption(event.target.value as string);
+
+        // Sort todos based on status
+        // active -> done
+        // invert selection
+        // set state is not working
+        sortedTodos = todos
+          .filter(todo => todo.status === event.target.value) // Filter based on status
+          .sort((a, b) => {
+            const dateA = new Date(a.creationTime).getTime();
+            const dateB = new Date(b.creationTime).getTime();
+            return dateA - dateB;  // Ascending sort by creation time
+          }); // fix 1.d
+
+    console.log("todos:", todos);
+    console.log("Sort Option:", event.target.value);
+    console.log("Sorted Todos:", sortedTodos);
+  };
+
   return (
     <Box
       sx={{
@@ -45,8 +75,35 @@ export default function App() {
         boxShadow: 1,
         fontWeight: 'bold',
       }}>
+
+      {/* fix 1.d: add status sorting */}
+      <Box sx={{ margin: 2, minWidth: 200 }}>
+        <Typography variant="h6" color="textPrimary" gutterBottom>
+          Order by status:
+        </Typography>
+        <FormControl fullWidth>
+          <InputLabel id="status-select-label">Sort by</InputLabel>
+          <Select
+            labelId="status-select-label"
+            value={sortOption}
+            onChange={handleSortChange}
+            label="Sort by"
+          >
+            <MenuItem value="[All]">[All]</MenuItem>
+            <MenuItem value="Active">Active</MenuItem>
+            <MenuItem value="Done">Done</MenuItem>
+          </Select>
+        </FormControl>
+      </Box>
       <Grid container spacing={10}>
-        {todos && todos.map((todo, index) => (
+        {todos && todos
+        .filter(todo => todo.status === sortOption || sortOption === "[All]") // Filter based on status
+        .sort((a, b) => {
+          const dateA = new Date(a.creationTime).getTime();
+          const dateB = new Date(b.creationTime).getTime();
+          return dateA - dateB;  // Ascending sort by creation time
+        })
+        .map((todo, index) => (
           <Grid item xs={10} key={todo.id ?? index}>
             <Card >
               <CardContent>
@@ -68,6 +125,7 @@ export default function App() {
           </Grid>))}
       </Grid>
     </Box>
+    
   );
 }
 

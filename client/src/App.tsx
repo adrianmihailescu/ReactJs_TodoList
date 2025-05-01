@@ -59,6 +59,10 @@ export default function App() {
                 <Typography variant="body2" color="textSecondary" component="p">
                   {todo.status}
                 </Typography>
+                {/* fix 1.c: Display the content of the Todo */}
+                 <Typography variant="body1" color="textPrimary" component="p" sx={{ marginTop: 2 }}>
+                   {todo.content}
+                 </Typography>
               </CardContent>
             </Card>
           </Grid>))}

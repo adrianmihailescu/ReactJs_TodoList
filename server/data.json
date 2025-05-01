@@ -14,7 +14,7 @@
     "content": "draw 23232 awaiting draw result",
     "creationTime": 1622374526379,
     "dueDate": 1622374714232,
-    "status": "Active",
+    "status": "Done",
     "type": "Results"
   },
   {
@@ -59,7 +59,7 @@
     "content": "user 234787 awaiting 1000.40$ payout",
     "creationTime": 1622374526379,
     "dueDate": 1622374714232,
-    "status": "Active",
+    "status": "Done",
     "type": "Wins"
   },
   {
@@ -77,7 +77,7 @@
     "content": "withdraw id 23443 awaiting approval",
     "creationTime": 1622374526379,
     "dueDate": 1622539324959,
-    "status": "Active",
+    "status": "Done",
     "type": "Withdraw"
   },
   {

@@ -38,6 +38,7 @@ export default function App() {
   }, []) // fix 1.a. Empty dependency array ensures the effect runs only once when the component mounts
 
   const callApi = async () => {
+    console.log("Fetching todos from API...");
     const response = await fetch('http://localhost:5001/api/todos');
     const body = await response.json();
     if (response.status !== 200) throw Error(body.message);
@@ -45,14 +46,19 @@ export default function App() {
   };
 
   // fix 1.e: Add Status Update functionality
-  const updateTodoStatus = async (id: string, newStatus: string) => {
+  const updateTodoStatus = async (todo: Todo, newStatus: string) => {
     try {
-      const response = await fetch(`http://localhost:5001/api/todos/${id}`, {
+      const updatedTodo = {
+        ...todo,
+        status: newStatus,
+      };
+  
+      const response = await fetch(`http://localhost:5001/api/todos/${todo.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify(updatedTodo),
       });
   
       if (!response.ok) {
@@ -60,21 +66,17 @@ export default function App() {
         return;
       }
   
-      // Re-fetch all todos after update to reflect the changes
       const updatedTodos = await callApi();
       setTodos(updatedTodos);
     } catch (error) {
       console.error("Error updating todo status:", error);
     }
   };
-  
 
-
-    // Handle the change in the dropdown for status sorting 
+  // Handle the change in the dropdown for status sorting 
   // fix 1.d add status
   const handleSortChange = (event: SelectChangeEvent<string>) => {
     setSortOption(event.target.value as string);
-
         // Sort todos based on status
         // active -> done
         // invert selection
@@ -167,7 +169,6 @@ export default function App() {
             .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage) // paginate
             .map((todo, index) => (
               <Grid item xs={10} key={todo.id ?? index}>
-                 {/* fix 1.i: Fixed height card */}
                 <Card sx={{
                   maxHeight: 200, display: 'flex', flexDirection: 'column', border: '1px solid black', borderRadius: '8px', marginBottom: 2 }}>
                   <CardContent sx={{
@@ -197,7 +198,7 @@ export default function App() {
                       {/* fix 1.e: Add status update button */}
                   {todo.status === 'Active' && (
                     <Box sx={{ marginTop: 1 }}>
-                      <button onClick={() => updateTodoStatus(todo.id, 'Done')}>
+                      <button onClick={() => updateTodoStatus(todo, 'Done')}>
                         Mark as Done
                       </button>
                     </Box>

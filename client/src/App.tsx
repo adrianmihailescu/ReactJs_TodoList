@@ -22,8 +22,10 @@ export default function App() {
   let sortedTodos = todos;
   const [sortOption, setSortOption] = useState<string>('[All]'); // fix 1d
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10; // fix 1.f: Pagination items per page
-  // const classes = useStyles();
+  const itemsPerPage = 10; // Pagination items per page
+  const [sortByDate, setSortByDate] = useState(false); // fix 1.f whether sorting is active
+  const [isDateAsc, setIsDateAsc] = useState(false); // sort direction toggle
+
 
   useEffect(() => {
     (
@@ -43,6 +45,32 @@ export default function App() {
     if (response.status !== 200) throw Error(body.message);
     return body;
   };
+
+  // fix 1.e: Add Status Update functionality
+  const updateTodoStatus = async (id: string, newStatus: string) => {
+    try {
+      const response = await fetch(`http://localhost:5001/api/todos/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+  
+      if (!response.ok) {
+        console.error("Failed to update status", response.statusText);
+        return;
+      }
+  
+      // Re-fetch all todos after update to reflect the changes
+      const updatedTodos = await callApi();
+      setTodos(updatedTodos);
+    } catch (error) {
+      console.error("Error updating todo status:", error);
+    }
+  };
+  
+
 
     // Handle the change in the dropdown for status sorting 
   // fix 1.d add status
@@ -102,20 +130,48 @@ export default function App() {
   
       {/* fix 1.b: Grid displaying the sorted TODO items */}
       <Box sx={{ flexGrow: 1, overflowY: 'auto', maxHeight: '100vh', p: 1 }}>
+          <Box sx={{ margin: 2 }}>
+      <Typography variant="h6" color="textPrimary" gutterBottom>
+        Sort by due date:
+      </Typography>
+      <button
+        onClick={() => {
+          setSortByDate(true);
+          setIsDateAsc(prev => !prev); // toggle asc/desc
+        }}
+        style={{
+          padding: '8px 12px',
+          backgroundColor: '#1976d2',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          fontWeight: 'bold'
+        }}
+      >
+        Sort by date ({isDateAsc ? 'Desc' : 'Asc'})
+      </button>
+    </Box>
         <Grid container rowSpacing={0} columnSpacing={1.25}>
           {todos && todos
-            .filter(todo => todo.status === sortOption || sortOption === "[All]") // Filter based on status
-            .sort((a, b) => {
-              const dateA = new Date(a.creationTime).getTime();
-              const dateB = new Date(b.creationTime).getTime();
-              return dateA - dateB;  // Ascending sort by creation time
-            })
+          .filter(todo => todo.status === sortOption || sortOption === "[All]")
+          .sort((a, b) => {
+            if (!sortByDate) {
+              // original sorting (by creation date asc)
+              return new Date(a.creationTime).getTime() - new Date(b.creationTime).getTime();
+            }
+
+            const dateA = new Date(a.dueDate ?? a.creationTime).getTime(); // fallback
+            const dateB = new Date(b.dueDate ?? b.creationTime).getTime();
+
+            return isDateAsc ? dateA - dateB : dateB - dateA;
+          })
             .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage) // paginate
             .map((todo, index) => (
               <Grid item xs={10} key={todo.id ?? index}>
                  {/* fix 1.i: Fixed height card */}
                 <Card sx={{
-                  maxHeight: 100, display: 'flex', flexDirection: 'column', border: '1px solid black', borderRadius: '8px', marginBottom: 2 }}>
+                  maxHeight: 200, display: 'flex', flexDirection: 'column', border: '1px solid black', borderRadius: '8px', marginBottom: 2 }}>
                   <CardContent sx={{
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -140,6 +196,14 @@ export default function App() {
                     <Typography variant="body1" color="textPrimary" component="p" sx={{ marginTop: 2 }}>
                       {todo.content}
                     </Typography>
+                      {/* fix 1.e: Add status update button */}
+                  {todo.status === 'Active' && (
+                    <Box sx={{ marginTop: 1 }}>
+                      <button onClick={() => updateTodoStatus(todo.id, 'Done')}>
+                        Mark as Done
+                      </button>
+                    </Box>
+                  )}
                   </CardContent>
                 </Card>
                 <Typography variant="subtitle1" color="textSecondary" sx={{ mt: 2 }}>

@@ -1,9 +1,31 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import App from './App';
 
-test('renders learn react link', () => {
+const mockTodos = [
+  {
+    id: '1',
+    title: 'Test Todo',
+    content: 'Test content',
+    status: 'Active',
+    type: 'Results',
+    creationTime: new Date().toISOString(),
+    dueDate: null,
+  },
+];
+
+beforeEach(() => {
+  jest.spyOn(global, 'fetch').mockResolvedValue({
+    ok: true,
+    json: async () => mockTodos,
+  } as Response);
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
+  localStorage.clear();
+});
+
+test('renders fetched todos', async () => {
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+  expect(await screen.findByText(/Test Todo/)).toBeInTheDocument();
 });

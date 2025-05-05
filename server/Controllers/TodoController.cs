@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.Caching.Memory;
 
 [ApiController]
 [EnableCors("AnyPolicy")]
@@ -13,32 +14,35 @@ using System.Linq;
 public class TodoController : ControllerBase
 {
   private readonly ILogger<TodoController> _logger;
+  private readonly IMemoryCache _cache;
+  private const string CacheKey = "todos";
 
-  public TodoController(ILogger<TodoController> logger)
+  public TodoController(ILogger<TodoController> logger, IMemoryCache cache)
   {
     _logger = logger;
+    _cache = cache;
   }
 
   [HttpGet]
   public IEnumerable<Todo> Get([FromQuery] string type)
   {
-      List<Todo> todos = new List<Todo>();
-      using (StreamReader r = new StreamReader("./data.json"))
+      if (!_cache.TryGetValue(CacheKey, out List<Todo> todos))
       {
-          string json = r.ReadToEnd();
-          todos = JsonConvert.DeserializeObject<List<Todo>>(json);
+          using (StreamReader r = new StreamReader("./data.json"))
+          {
+              string json = r.ReadToEnd();
+              todos = JsonConvert.DeserializeObject<List<Todo>>(json);
+              _cache.Set(CacheKey, todos, TimeSpan.FromMinutes(10)); // cache for 10 min
+          }
       }
 
-      if (!string.IsNullOrEmpty(type))
+      if (!string.IsNullOrEmpty(type) && type != "All")
       {
-          todos = todos.Where(
-            t => t.Type.Equals(type, StringComparison.OrdinalIgnoreCase) || type == "All"
-            ).ToList();
+          todos = todos.Where(t => t.Type?.Equals(type, StringComparison.OrdinalIgnoreCase) == true).ToList();
       }
 
       return todos;
   }
-
 
   [HttpPut("{id}")]
   public IActionResult Put(string id, [FromBody] Todo updatedTodo)
@@ -66,6 +70,9 @@ public class TodoController : ControllerBase
           // Save back to file
           var updatedJson = JsonConvert.SerializeObject(todos, Formatting.Indented);
           System.IO.File.WriteAllText(filePath, updatedJson);
+
+          // keep cache valid for 10 minutes
+          _cache.Set(CacheKey, todos, TimeSpan.FromMinutes(10));
 
           return Ok(todo);
       }

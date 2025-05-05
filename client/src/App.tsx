@@ -7,13 +7,16 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Pagination from '@mui/material/Pagination';
 
-import { Todo } from './models/todo';
-import './App.css';
-
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
+
+// models
+import { Todo } from './models/todo';
+
+// styles
+import './App.css';
 
 export default function App() {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -25,18 +28,20 @@ export default function App() {
   const [isDateAsc, setIsDateAsc] = useState(false); // sort direction toggle
 
   const itemsPerPage = 10; // Pagination items per page
+  const baseUrl = 'http://localhost:5001/api/todos'; // Base URL for API
 
   useEffect(() => {
     loadTodos(); // Load todos when the component mounts
   }, [typeFilter]); // fix 1.a Empty dependency array to only run once on mount
 
   const callApi = async (type?: string) => {
-    let url = 'http://localhost:5001/api/todos';
-    url += `?type=${type}`;  
+    let url = `${baseUrl}?type=${type}`;
     const response = await fetch(url);
     const body = await response.json();
   
-    if (response.status !== 200) throw Error(body.message);
+    if (response.status !== 200)
+      throw Error(body.message);
+
     return body;
   };
   
@@ -50,8 +55,7 @@ export default function App() {
       } catch (error) {
         console.error('Error loading todos from API:', error);
       }
-    };
-    
+    };   
 
   // fix 1.e: Add Status Update functionality
   const updateTodoStatus = async (todo: Todo, newStatus: string) => {
@@ -61,7 +65,7 @@ export default function App() {
         status: newStatus,
       };
   
-      const response = await fetch(`http://localhost:5001/api/todos/${todo.id}`, {
+      const response = await fetch(`${baseUrl}/${todo.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -81,8 +85,8 @@ export default function App() {
     }
   };
 
-  // Handle the change in the dropdown for status sorting 
   // fix 1.d add status
+  // Handle the change in the dropdown for status sorting 
   const handleSortChange = (event: SelectChangeEvent<string>) => {
     setSortOption(event.target.value as string);
         // Sort todos based on status: active -> done
@@ -91,15 +95,16 @@ export default function App() {
           .sort((a, b) => {
             const dateA = new Date(a.creationTime).getTime();
             const dateB = new Date(b.creationTime).getTime();
-            return dateA - dateB;  // Ascending sort by creation time
+            return dateA - dateB;
           }); // fix 1.d
+
     setItemsCount(Math.ceil(
         todos.filter(todo => todo.status === sortOption || sortOption === "[All]").length / itemsPerPage
       ));
   };
 
   const handlePageChange = (_event: React.ChangeEvent<unknown>, page: number) => {
-    setCurrentPage(page); // fix 1.f: Update page number
+    setCurrentPage(page);
   };
 
   return (
@@ -222,7 +227,7 @@ export default function App() {
                     <Typography variant="body1" color="textPrimary" component="p" sx={{ marginTop: 2 }}>
                       {todo.content}
                     </Typography>
-                    {/* fix 1.c filter by type */}
+                    {/* fix 2.c filter by type */}
                     <Typography variant="body1" color="textPrimary" component="p" sx={{ marginTop: 2 }}>
                       {todo.type}
                     </Typography>

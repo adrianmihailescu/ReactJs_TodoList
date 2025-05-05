@@ -14,6 +14,9 @@ builder.Services.AddCors(options =>
       .AllowAnyMethod()
       .AllowAnyOrigin());
 });
+
+builder.Services.AddMemoryCache(); // fix 2.b round-trip optimization
+
 var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -7,7 +7,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-
+// todo best practices
+// todo part 2
 [ApiController]
 [EnableCors("AnyPolicy")]
 [Route("api/todos")]

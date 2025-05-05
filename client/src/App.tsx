@@ -15,10 +15,12 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
 
-
+// todo best practices
+// todo part 2
 export default function App() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [sortOption, setSortOption] = useState<string>('[All]'); // fix 1d
+  const [itemsCount, setItemsCount] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10; // Pagination items per page
   const [sortByDate, setSortByDate] = useState(false); // fix 1.f whether sorting is active
@@ -31,17 +33,17 @@ export default function App() {
 
         const data = await callApi();
         setTodos(data);
-
       }()
     )
-
   }, []) // fix 1.a. Empty dependency array ensures the effect runs only once when the component mounts
 
   const callApi = async () => {
     console.log("Fetching todos from API...");
     const response = await fetch('http://localhost:5001/api/todos');
     const body = await response.json();
-    if (response.status !== 200) throw Error(body.message);
+
+    if (response.status !== 200)
+      throw Error(body.message);
     return body;
   };
 
@@ -80,7 +82,6 @@ export default function App() {
         // Sort todos based on status
         // active -> done
         // invert selection
-        // set state is not working
         todos
           .filter(todo => todo.status === event.target.value) // Filter based on status
           .sort((a, b) => {
@@ -88,6 +89,9 @@ export default function App() {
             const dateB = new Date(b.creationTime).getTime();
             return dateA - dateB;  // Ascending sort by creation time
           }); // fix 1.d
+    setItemsCount(Math.ceil(
+        todos.filter(todo => todo.status === sortOption || sortOption === "[All]").length / itemsPerPage
+      ));
   };
 
   const handlePageChange = (_event: React.ChangeEvent<unknown>, page: number) => {
@@ -161,7 +165,7 @@ export default function App() {
               return new Date(a.creationTime).getTime() - new Date(b.creationTime).getTime();
             }
 
-            const dateA = new Date(a.dueDate ?? a.creationTime).getTime(); // fallback
+            const dateA = new Date(a.dueDate ?? a.creationTime).getTime();
             const dateB = new Date(b.dueDate ?? b.creationTime).getTime();
 
             return isDateAsc ? dateA - dateB : dateB - dateA;
@@ -211,17 +215,15 @@ export default function App() {
             ))}
         </Grid>
           {/* fix 1.f: Pagination control */}
-  <Box sx={{ display: 'flex', justifyContent: 'center'}}>
-    <Pagination
-      count={Math.ceil(
-        todos.filter(todo => todo.status === sortOption || sortOption === "[All]").length / itemsPerPage
-      )}
-      page={currentPage}
-      onChange={handlePageChange}
-      color="primary"      
-    />
+    <Box sx={{ display: 'flex', justifyContent: 'center'}}>
+      <Pagination
+        count={itemsCount}
+        page={currentPage}
+        onChange={handlePageChange}
+        color="primary"      
+      />
+    </Box>
   </Box>
-      </Box>
     </Box>
   );  
 }

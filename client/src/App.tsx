@@ -20,41 +20,38 @@ export default function App() {
   const [sortOption, setSortOption] = useState<string>('[All]'); // fix 1d
   const [itemsCount, setItemsCount] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10; // Pagination items per page
+  const [typeFilter, setTypeFilter] = useState<string>('All');
   const [sortByDate, setSortByDate] = useState(true); // fix 1.f whether sorting bydate is active
   const [isDateAsc, setIsDateAsc] = useState(false); // sort direction toggle
 
+  const itemsPerPage = 10; // Pagination items per page
+
   useEffect(() => {
     loadTodos(); // Load todos when the component mounts
-  }, []); // fix 1.a Empty dependency array to only run once on mount
+  }, [typeFilter]); // fix 1.a Empty dependency array to only run once on mount
 
-  const callApi = async () => {
-    console.log("Fetching todos from API...");
-    const response = await fetch('http://localhost:5001/api/todos');
+  const callApi = async (type?: string) => {
+    let url = 'http://localhost:5001/api/todos';
+    url += `?type=${type}`;  
+    const response = await fetch(url);
     const body = await response.json();
-
-    if (response.status !== 200) {
-      throw Error(body.message);
-    }
+  
+    if (response.status !== 200) throw Error(body.message);
     return body;
   };
+  
 
     // fix 2.d Fetch todos from the API and store them in localStorage
     const loadTodos = async () => {
-      const savedTodos = localStorage.getItem('todos');
-
-      if (savedTodos && savedTodos !== '[]') {
-        setTodos(JSON.parse(savedTodos)); // Load todos from localStorage
-      } else {
-        try {
-          const data = await callApi();
-          localStorage.setItem('todos', JSON.stringify(data)); // Save to localStorage
-          setTodos(data);
-        } catch (error) {
-          console.error('Error loading todos from API:', error);
-        }
+      try {
+        const data = await callApi(typeFilter);
+        localStorage.setItem('todos', JSON.stringify(data));
+        setTodos(data);
+      } catch (error) {
+        console.error('Error loading todos from API:', error);
       }
     };
+    
 
   // fix 1.e: Add Status Update functionality
   const updateTodoStatus = async (todo: Todo, newStatus: string) => {
@@ -163,6 +160,25 @@ export default function App() {
         Sort by date ({isDateAsc ? 'Desc' : 'Asc'})
       </button>
     </Box>
+    <Box sx={{ margin: 2, minWidth: 200 }}>
+                        <Typography variant="h6" color="textPrimary" gutterBottom>
+                          Filter by type:
+                        </Typography>
+                        <FormControl fullWidth>
+                          <InputLabel id="type-select-label">Type</InputLabel>
+                          <Select
+                            labelId="type-select-label"
+                            value={typeFilter}
+                            onChange={(e) => setTypeFilter(e.target.value)}
+                            label="Type"
+                          >
+                            <MenuItem value="All">All</MenuItem>
+                            <MenuItem value="Results">Results</MenuItem>
+                            <MenuItem value="Wins">Wins</MenuItem>
+                            <MenuItem value="Withdraw">Withdraw</MenuItem>
+                          </Select>
+                        </FormControl>
+                        </Box>
         <Grid container rowSpacing={0} columnSpacing={1.25}>
           {todos && todos
           .filter(todo => todo.status === sortOption || sortOption === "[All]")
@@ -181,7 +197,7 @@ export default function App() {
             .map((todo, index) => (
               <Grid item xs={10} key={todo.id ?? index}>
                 <Card sx={{
-                  maxHeight: 200, display: 'flex', flexDirection: 'column', border: '1px solid black', borderRadius: '8px', marginBottom: 2 }}>
+                  maxHeight: 250, display: 'flex', flexDirection: 'column', border: '1px solid black', borderRadius: '8px', marginBottom: 2 }}>
                   <CardContent sx={{
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -206,13 +222,17 @@ export default function App() {
                     <Typography variant="body1" color="textPrimary" component="p" sx={{ marginTop: 2 }}>
                       {todo.content}
                     </Typography>
+                    {/* fix 1.c filter by type */}
+                    <Typography variant="body1" color="textPrimary" component="p" sx={{ marginTop: 2 }}>
+                      {todo.type}
+                    </Typography>
                       {/* fix 1.e: Add status update button */}
                   {todo.status === 'Active' && (
                     <Box sx={{ marginTop: 1 }}>
-                      <button onClick={() => updateTodoStatus(todo, 'Done')}>
-                        Mark as Done
-                      </button>
-                    </Box>
+                        <button onClick={() => updateTodoStatus(todo, 'Done')}>
+                          Mark as Done
+                        </button>
+                        </Box>               
                   )}
                   </CardContent>
                 </Card>

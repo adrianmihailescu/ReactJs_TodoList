@@ -7,8 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-// todo best practices
-// todo part 2
 [ApiController]
 [EnableCors("AnyPolicy")]
 [Route("api/todos")]
@@ -22,16 +20,25 @@ public class TodoController : ControllerBase
   }
 
   [HttpGet]
-  public IEnumerable<Todo> Get()
+  public IEnumerable<Todo> Get([FromQuery] string type)
   {
-    List<Todo> todos = new List<Todo>();
-    using (StreamReader r = new StreamReader("./data.json"))
-    {
-      string json = r.ReadToEnd();
-      todos = JsonConvert.DeserializeObject<List<Todo>>(json);
-    }
-    return todos;
+      List<Todo> todos = new List<Todo>();
+      using (StreamReader r = new StreamReader("./data.json"))
+      {
+          string json = r.ReadToEnd();
+          todos = JsonConvert.DeserializeObject<List<Todo>>(json);
+      }
+
+      if (!string.IsNullOrEmpty(type))
+      {
+          todos = todos.Where(
+            t => t.Type.Equals(type, StringComparison.OrdinalIgnoreCase) || type == "All"
+            ).ToList();
+      }
+
+      return todos;
   }
+
 
   [HttpPut("{id}")]
   public IActionResult Put(string id, [FromBody] Todo updatedTodo)

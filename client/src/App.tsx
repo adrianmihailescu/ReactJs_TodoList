@@ -53,15 +53,15 @@ export default function App() {
 
   // fix 1.c: Filter and sort the todos based on the selected sort option and date
   const filteredSortedTodos = useMemo(() => {
-    let filtered = [...todos]; // clone to avoid mutating state
+    let filteredItems = [...todos]; // clone to avoid mutating state
 
     // fix 2.c: Filter todos based on the selected sort option (Active/Done/[All])
     if (sortOption !== '[All]') {
-      filtered = filtered.filter(todo => todo.status === sortOption);
+      filteredItems = filteredItems.filter(todo => todo.status === sortOption);
     }
 
     // fix 3.c: Sort todos by date based on ascending or descending order
-    filtered.sort((a, b) => {
+    filteredItems.sort((a, b) => {
       const dateA = new Date(a.dueDate ?? a.creationTime);
       const dateB = new Date(b.dueDate ?? b.creationTime);
       console.log('Date A:', dateA, 'Date B:', dateB);
@@ -70,7 +70,7 @@ export default function App() {
         : dateB.getTime() - dateA.getTime();
     });
 
-    return filtered;
+    return filteredItems;
   }, [todos, sortOption, isDateAsc]);
 
   // fix 5.c: Paginate the todos after applying the sorting and filtering

@@ -2,8 +2,6 @@ import React from 'react';
 import { Card, CardContent, Typography, Button } from '@mui/material';
 import { TodoCardProps } from './../interfaces/TodoCardProps';
 
-
-
 const TodoCard: React.FC<TodoCardProps> = ({ todo, index, updateTodoStatus, currentPage }) => {
   return (
     <Card sx={{ border: '1px solid black', borderRadius: '8px' }}>

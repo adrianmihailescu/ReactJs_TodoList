@@ -1,3 +1,5 @@
+![image](https://github.com/user-attachments/assets/85608192-8d65-4ad1-84f0-3c9863eeb158)
+
 # TheLotter TODOs Exam
 
 ## Application Description

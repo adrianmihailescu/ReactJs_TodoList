@@ -15,8 +15,6 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
 
-// todo best practices
-// todo part 2
 export default function App() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [sortOption, setSortOption] = useState<string>('[All]'); // fix 1d
@@ -32,13 +30,13 @@ export default function App() {
 
   const callApi = async () => {
     console.log("Fetching todos from API...");
-    const response = await fetch('http://localhost:5001/api/todos'); // Adjust the URL as needed
+    const response = await fetch('http://localhost:5001/api/todos');
     const body = await response.json();
 
     if (response.status !== 200) {
-      throw Error(body.message); // Handle error response
+      throw Error(body.message);
     }
-    return body; // Return the response body (assumed to be a list of todos)
+    return body;
   };
 
     // fix 2.d Fetch todos from the API and store them in localStorage
@@ -49,9 +47,9 @@ export default function App() {
         setTodos(JSON.parse(savedTodos)); // Load todos from localStorage
       } else {
         try {
-          const data = await callApi(); // Fetch from the server API
+          const data = await callApi();
           localStorage.setItem('todos', JSON.stringify(data)); // Save to localStorage
-          setTodos(data); // Set todos in the state
+          setTodos(data);
         } catch (error) {
           console.error('Error loading todos from API:', error);
         }

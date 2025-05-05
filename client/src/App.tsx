@@ -26,26 +26,37 @@ export default function App() {
   const [sortByDate, setSortByDate] = useState(true); // fix 1.f whether sorting bydate is active
   const [isDateAsc, setIsDateAsc] = useState(false); // sort direction toggle
 
-
   useEffect(() => {
-    (
-      async function () {
-
-        const data = await callApi();
-        setTodos(data);
-      }()
-    )
-  }, []) // fix 1.a. Empty dependency array ensures the effect runs only once when the component mounts
+    loadTodos(); // Load todos when the component mounts
+  }, []); // fix 1.a Empty dependency array to only run once on mount
 
   const callApi = async () => {
     console.log("Fetching todos from API...");
-    const response = await fetch('http://localhost:5001/api/todos');
+    const response = await fetch('http://localhost:5001/api/todos'); // Adjust the URL as needed
     const body = await response.json();
 
-    if (response.status !== 200)
-      throw Error(body.message);
-    return body;
+    if (response.status !== 200) {
+      throw Error(body.message); // Handle error response
+    }
+    return body; // Return the response body (assumed to be a list of todos)
   };
+
+    // fix 2.d Fetch todos from the API and store them in localStorage
+    const loadTodos = async () => {
+      const savedTodos = localStorage.getItem('todos');
+
+      if (savedTodos && savedTodos !== '[]') {
+        setTodos(JSON.parse(savedTodos)); // Load todos from localStorage
+      } else {
+        try {
+          const data = await callApi(); // Fetch from the server API
+          localStorage.setItem('todos', JSON.stringify(data)); // Save to localStorage
+          setTodos(data); // Set todos in the state
+        } catch (error) {
+          console.error('Error loading todos from API:', error);
+        }
+      }
+    };
 
   // fix 1.e: Add Status Update functionality
   const updateTodoStatus = async (todo: Todo, newStatus: string) => {

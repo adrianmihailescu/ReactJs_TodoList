@@ -4,14 +4,14 @@ import { baseUrl } from './../config';
 export async function updateTodoStatus(todo: Todo, newStatus: string) {
   try {
     const updatedTodo = { ...todo, status: newStatus };
-    const res = await fetch(`${baseUrl}/${todo.id}`, {
+    const result = await fetch(`${baseUrl}/${todo.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updatedTodo),
     });
 
-    if (!res.ok) {
-      throw new Error('Failed to update status');
+    if (!result.ok) {
+      throw new Error(`Failed to update status. Status: ${result.status}`);
     }
 
     return true;
@@ -24,17 +24,17 @@ export async function updateTodoStatus(todo: Todo, newStatus: string) {
 export const fetchTodos = async (typeFilter: string) => {
   
     try {
-      const res = await fetch(`${baseUrl}?type=${typeFilter}`);
-      const data = await res.json();
+      const result = await fetch(`${baseUrl}?type=${typeFilter}`);
+      const data = await result.json();
   
-      if (!res.ok) {
+      if (!result.ok) {
         throw new Error(data.message || 'Failed to fetch todos');
       }
   
-      return data; // Return the fetched todos
+      return data;
     } catch (err) {
       console.error('Failed to fetch todos:', err);
-      throw err; // Rethrow error so it can be handled by calling component or hook
+      throw err;
     }
   };
   

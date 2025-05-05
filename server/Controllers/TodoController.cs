@@ -38,7 +38,7 @@ public class TodoController : ControllerBase
 
       if (!string.IsNullOrEmpty(type) && type != "All")
       {
-          todos = todos.Where(t => t.Type?.Equals(type, StringComparison.OrdinalIgnoreCase)).ToList();
+          todos = todos.Where(t => (t.Type?.Equals(type, StringComparison.OrdinalIgnoreCase)) ?? false).ToList();
       }
 
       return todos;

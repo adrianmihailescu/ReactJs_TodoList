@@ -23,7 +23,7 @@ export default function App() {
   const [itemsCount, setItemsCount] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10; // Pagination items per page
-  const [sortByDate, setSortByDate] = useState(false); // fix 1.f whether sorting is active
+  const [sortByDate, setSortByDate] = useState(true); // fix 1.f whether sorting bydate is active
   const [isDateAsc, setIsDateAsc] = useState(false); // sort direction toggle
 
 
@@ -79,9 +79,7 @@ export default function App() {
   // fix 1.d add status
   const handleSortChange = (event: SelectChangeEvent<string>) => {
     setSortOption(event.target.value as string);
-        // Sort todos based on status
-        // active -> done
-        // invert selection
+        // Sort todos based on status: active -> done
         todos
           .filter(todo => todo.status === event.target.value) // Filter based on status
           .sort((a, b) => {
@@ -103,13 +101,13 @@ export default function App() {
       sx={{
         display: 'flex',
         flexDirection: { xs: 'column', md: 'row' },
-        alignItems: 'flex-start', // better than center for top alignment
+        alignItems: 'flex-start',
         bgcolor: 'background.paper',
         overflow: 'hidden',
         borderRadius: '12px',
         boxShadow: 1,
         fontWeight: 'bold',
-        height: '100vh', // Make the layout take up the full viewport height
+        height: '100vh',
       }}>
   
       {/* fix 1.d: add status sorting */}

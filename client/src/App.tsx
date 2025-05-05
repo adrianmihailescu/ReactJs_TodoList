@@ -1,35 +1,30 @@
-import { useEffect, useState, useMemo } from 'react';
+// App.tsx
+import { useState } from 'react';
 import { Box, Grid, Pagination } from '@mui/material';
 import FilterPanel from './components/FilterPanel';
 import TodoCard from './components/TodoCard';
 import { Todo } from './models/todo';
 import './App.css';
+import { useTodos } from './hooks/useTodos';  // Ensure correct import
+import { fetchTodos } from './services/todoService';
 
-const itemsPerPage = 10;
 const baseUrl = 'http://localhost:5001/api/todos';
 
 export default function App() {
-  const [todos, setTodos] = useState<Todo[]>([]);
   const [sortOption, setSortOption] = useState('[All]');
   const [currentPage, setCurrentPage] = useState(1);
   const [typeFilter, setTypeFilter] = useState('All');
   const [isDateAsc, setIsDateAsc] = useState(false);
 
-  useEffect(() => {
-    fetchTodos();
-  }, [typeFilter]);
-
-  const fetchTodos = async () => {
-    try {
-      const res = await fetch(`${baseUrl}?type=${typeFilter}`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-      localStorage.setItem('todos', JSON.stringify(data));
-      setTodos(data);
-    } catch (err) {
-      console.error('Failed to load todos:', err);
-    }
-  };
+  // Using the useTodos hook
+  const {
+    // todos,
+    setTodos,
+    // filteredSortedTodos,
+    paginatedTodos,
+    totalPages,
+    // ITEMS_PER_PAGE,
+  } = useTodos(typeFilter, sortOption, isDateAsc, currentPage);
 
   const updateTodoStatus = async (todo: Todo, newStatus: string) => {
     try {
@@ -45,41 +40,11 @@ export default function App() {
         return;
       }
 
-      fetchTodos(); // fix 1.a: Refresh after update
+      setTodos(await fetchTodos(typeFilter));  // Refresh todos
     } catch (err) {
       console.error('Error updating status:', err);
     }
   };
-
-  // fix 1.c: Filter and sort the todos based on the selected sort option and date
-  const filteredSortedTodos = useMemo(() => {
-    let filteredItems = [...todos]; // clone to avoid mutating state
-
-    // fix 2.c: Filter todos based on the selected sort option (Active/Done/[All])
-    if (sortOption !== '[All]') {
-      filteredItems = filteredItems.filter(todo => todo.status === sortOption);
-    }
-
-    // fix 3.c: Sort todos by date based on ascending or descending order
-    filteredItems.sort((a, b) => {
-      const dateA = new Date(a.dueDate ?? a.creationTime);
-      const dateB = new Date(b.dueDate ?? b.creationTime);
-      console.log('Date A:', dateA, 'Date B:', dateB);
-      return isDateAsc
-        ? dateA.getTime() - dateB.getTime()
-        : dateB.getTime() - dateA.getTime();
-    });
-
-    return filteredItems;
-  }, [todos, sortOption, isDateAsc]);
-
-  // fix 5.c: Paginate the todos after applying the sorting and filtering
-  const paginatedTodos = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return filteredSortedTodos.slice(start, start + itemsPerPage);
-  }, [filteredSortedTodos, currentPage]);
-
-  const totalPages = Math.ceil(filteredSortedTodos.length / itemsPerPage);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, height: '100vh' }}>

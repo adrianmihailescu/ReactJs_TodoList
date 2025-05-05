@@ -57,8 +57,7 @@ public class TodoController : ControllerBase
 
           if (todos == null)
               return NotFound("Todo list is empty.");
-
-          // Find the todo with the given id
+              
           var todo = todos.FirstOrDefault(t => t.Id == id);
 
           if (todo == null)

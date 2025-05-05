@@ -197,7 +197,7 @@ export default function App() {
             .map((todo, index) => (
               <Grid item xs={10} key={todo.id ?? index}>
                 <Card sx={{
-                  maxHeight: 250, display: 'flex', flexDirection: 'column', border: '1px solid black', borderRadius: '8px', marginBottom: 2 }}>
+                  maxHeight: 250, display: 'flex', flexDirection: 'column', border: '1px solid black', borderRadius: '8px', marginBottom: 2, marginLeft: 2 }}>
                   <CardContent sx={{
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',

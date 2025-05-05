@@ -1,6 +1,5 @@
 import { Todo } from '../models/todo';
-
-const baseUrl = 'http://localhost:5001/api/todos';
+import { baseUrl } from './../config';
 
 export async function updateTodoStatus(todo: Todo, newStatus: string) {
   try {
@@ -22,10 +21,7 @@ export async function updateTodoStatus(todo: Todo, newStatus: string) {
   }
 }
 
-// services/todoService.ts
-
 export const fetchTodos = async (typeFilter: string) => {
-    const baseUrl = 'http://localhost:5001/api/todos';
   
     try {
       const res = await fetch(`${baseUrl}?type=${typeFilter}`);

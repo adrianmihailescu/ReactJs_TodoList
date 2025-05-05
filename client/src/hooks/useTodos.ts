@@ -1,4 +1,3 @@
-// hooks/useTodos.ts
 import { useEffect, useMemo, useState } from 'react';
 import { Todo } from '../models/todo';
 import { fetchTodos } from '../services/todoService';
@@ -27,7 +26,7 @@ export function useTodos(
 
   // fix 1.f: Filter and sort the todos based on the selected sort option and date
   const filteredSortedTodos = useMemo(() => {
-    let filteredItems = [...todos]; // clone to avoid mutating state
+    let filteredItems = [...todos];
 
     // fix 1.d: Filter todos based on the selected sort option (Active/Done/[All])
     if (sortOption !== '[All]') {
@@ -38,7 +37,6 @@ export function useTodos(
     filteredItems.sort((a, b) => {
       const dateA = new Date(a.dueDate ?? a.creationTime);
       const dateB = new Date(b.dueDate ?? b.creationTime);
-      console.log('Date A:', dateA, 'Date B:', dateB);
       return isDateAsc
         ? dateA.getTime() - dateB.getTime()
         : dateB.getTime() - dateA.getTime();

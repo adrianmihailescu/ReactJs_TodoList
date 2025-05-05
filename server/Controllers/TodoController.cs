@@ -32,13 +32,13 @@ public class TodoController : ControllerBase
           {
               string json = r.ReadToEnd();
               todos = JsonConvert.DeserializeObject<List<Todo>>(json);
-              _cache.Set(CacheKey, todos, TimeSpan.FromMinutes(10)); // cache for 10 min
+              _cache.Set(CacheKey, todos, TimeSpan.FromMinutes(10));
           }
       }
 
       if (!string.IsNullOrEmpty(type) && type != "All")
       {
-          todos = todos.Where(t => t.Type?.Equals(type, StringComparison.OrdinalIgnoreCase) == true).ToList();
+          todos = todos.Where(t => t.Type?.Equals(type, StringComparison.OrdinalIgnoreCase)).ToList();
       }
 
       return todos;

@@ -1,14 +1,12 @@
-// App.tsx
 import { useState } from 'react';
 import { Box, Grid, Pagination } from '@mui/material';
 import FilterPanel from './components/FilterPanel';
 import TodoCard from './components/TodoCard';
 import { Todo } from './models/todo';
 import './App.css';
-import { useTodos } from './hooks/useTodos';  // Ensure correct import
+import { useTodos } from './hooks/useTodos';
 import { fetchTodos } from './services/todoService';
-
-const baseUrl = 'http://localhost:5001/api/todos';
+import { baseUrl } from './config';
 
 export default function App() {
   const [sortOption, setSortOption] = useState('[All]');
@@ -18,12 +16,9 @@ export default function App() {
 
   // Using the useTodos hook
   const {
-    // todos,
     setTodos,
-    // filteredSortedTodos,
     paginatedTodos,
     totalPages,
-    // ITEMS_PER_PAGE,
   } = useTodos(typeFilter, sortOption, isDateAsc, currentPage);
 
   const updateTodoStatus = async (todo: Todo, newStatus: string) => {

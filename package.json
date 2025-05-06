@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "scripts": {
         "client": "cd client && npm start",
-        "server": "cd server && dotnet run --project todo.csproj",
+        "server": "cd server/ToDoApp.Api && dotnet run --project todo.csproj",
         "dev": "concurrently --kill-others-on-fail \"npm run server\" \"npm run client\""
     },
     "dependencies": {

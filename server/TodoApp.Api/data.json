@@ -14,7 +14,7 @@
     "content": "draw 23232 awaiting draw result",
     "creationTime": 1622374526379,
     "dueDate": 1622374714232,
-    "status": "Active",
+    "status": "Done",
     "type": "Results"
   },
   {
@@ -68,7 +68,7 @@
     "content": "withdraw id 5452 awaiting approval",
     "creationTime": 1542111235544,
     "dueDate": 1622539315287,
-    "status": "Done",
+    "status": "Active",
     "type": "Withdraw"
   },
   {
@@ -86,7 +86,7 @@
     "content": "withdraw id 127888 awaiting approval",
     "creationTime": 1622374714232,
     "dueDate": 1622539336894,
-    "status": "Done",
+    "status": "Active",
     "type": "Withdraw"
   },
   {

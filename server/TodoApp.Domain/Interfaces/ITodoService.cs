@@ -5,7 +5,7 @@ namespace TodoApp.Domain.Interfaces
 {
     public interface ITodoService
     {
-        List<Todo> GetTodos(string type);
-        Todo UpdateTodoStatus(string id, string status);
+        Task<List<Todo>> GetTodosAsync(string type);
+        Task<Todo> UpdateTodoStatusAsync(string id, string status);
     }
 }

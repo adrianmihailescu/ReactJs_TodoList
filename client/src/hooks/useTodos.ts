@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Todo } from '../models/todo';
 import { fetchTodos } from '../services/todoService';
+import { itemsPerPage } from './../config';
 
 export function useTodos(
   typeFilter: string,
@@ -12,7 +13,7 @@ export function useTodos(
 
   // fix 2.c: Use hook to fetch todos when typeFilter changes
   useEffect(() => {
-    const load = async () => {
+    const loadTodos = async () => {
       try {
         const data = await fetchTodos(typeFilter);
         localStorage.setItem('todos', JSON.stringify(data));
@@ -21,7 +22,7 @@ export function useTodos(
         console.error('Failed to load todos:', err);
       }
     };
-    load();
+    loadTodos();
   }, [typeFilter]);
 
   // fix 1.f: Filter and sort the todos based on the selected sort option and date
@@ -46,13 +47,12 @@ export function useTodos(
   }, [todos, sortOption, isDateAsc]);
 
   // fix 2.a: Paginate the todos after applying the sorting and filtering
-  const ITEMS_PER_PAGE = 10;
-  const start = (currentPage - 1) * ITEMS_PER_PAGE;
+  const start = (currentPage - 1) * itemsPerPage;
   const paginatedTodos = useMemo(() => {
-    return filteredSortedTodos.slice(start, start + ITEMS_PER_PAGE);
+    return filteredSortedTodos.slice(start, start + itemsPerPage);
   }, [filteredSortedTodos, currentPage]);
 
-  const totalPages = Math.ceil(filteredSortedTodos.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(filteredSortedTodos.length / itemsPerPage);
 
   return {
     todos,
@@ -60,6 +60,6 @@ export function useTodos(
     filteredSortedTodos,
     paginatedTodos,
     totalPages,
-    ITEMS_PER_PAGE,
+    itemsPerPage,
   };
 }

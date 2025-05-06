@@ -9,17 +9,20 @@ import { fetchTodos } from './services/todoService';
 import { baseUrl } from './config';
 
 export default function App() {
-  const [sortOption, setSortOption] = useState('[All]');
   const [currentPage, setCurrentPage] = useState(1);
-  const [typeFilter, setTypeFilter] = useState('All');
-  const [isDateAsc, setIsDateAsc] = useState(false);
+
+  const [filters, setFilters] = useState({
+    sortOption: '[All]',
+    typeFilter: 'All',
+    isDateAsc: false,
+  });
 
   // Using the useTodos hook
   const {
     setTodos,
     paginatedTodos,
     totalPages,
-  } = useTodos(typeFilter, sortOption, isDateAsc, currentPage);
+  } = useTodos(filters.typeFilter, filters.sortOption, filters.isDateAsc, currentPage);
 
   const updateTodoStatus = async (todo: Todo, newStatus: string) => {
     try {
@@ -35,7 +38,7 @@ export default function App() {
         return;
       }
 
-      setTodos(await fetchTodos(typeFilter));  // Refresh todos
+      setTodos(await fetchTodos(filters.typeFilter));
     } catch (err) {
       console.error('Error updating status:', err);
     }
@@ -45,12 +48,8 @@ export default function App() {
     <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, height: '100vh' }}>
       {/* Sidebar Filters */}
       <FilterPanel
-        sortOption={sortOption}
-        setSortOption={setSortOption}
-        isDateAsc={isDateAsc}
-        setIsDateAsc={setIsDateAsc}
-        typeFilter={typeFilter}
-        setTypeFilter={setTypeFilter}
+        filters={filters}
+        setFilters={setFilters}
       />
 
       {/* ToDo List */}

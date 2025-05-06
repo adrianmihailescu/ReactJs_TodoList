@@ -1,18 +1,24 @@
 ﻿namespace TodoApp.Tests;
+using TodoApp.Application.Services;
+using TodoApp.Domain.Interfaces;
+using TodoApp.Domain.Models;
+
+using Moq;
 
 public class TodoAppServiceTests
 {
     private readonly Mock<ITodoRepository> _todoRepositoryMock;
     private readonly TodoService _todoService;
 
-    public TodoServiceTests()
+    public TodoAppServiceTests()
     {
         _todoRepositoryMock = new Mock<ITodoRepository>();
         _todoService = new TodoService(_todoRepositoryMock.Object);
     }
 
+    #region async tests
     [Fact]
-    public void GetTodos_ShouldReturnFilteredTodos_WhenTypeIsGiven()
+    public async Task GetTodosAsync_ShouldReturnFilteredTodos_WhenTypeIsGiven()
     {
         // Arrange
         var todos = new List<Todo>
@@ -21,10 +27,13 @@ public class TodoAppServiceTests
             new Todo { Id = "2", Type = "Personal" }
         };
 
-        _todoRepositoryMock.Setup(r => r.GetTodos()).Returns(todos);
+        _todoRepositoryMock
+            .Setup(r => r.GetTodosAsync())
+            .ReturnsAsync(todos);
 
         // Act
-        var result = _todoService.GetTodos("Work");
+        var result = await _todoService.GetTodosAsync("Work");
+        Console.WriteLine($"Returned todos: {string.Join(",", result.Select(t => t.Type))}");
 
         // Assert
         Assert.Single(result);
@@ -32,22 +41,38 @@ public class TodoAppServiceTests
     }
 
     [Fact]
-    public void UpdateTodoStatus_ShouldUpdateStatus_WhenTodoExists()
+    public async Task UpdateTodoStatusAsync_ShouldUpdateStatus_WhenTodoExists()
     {
         // Arrange
-        var todos = new List<Todo>
-        {
-            new Todo { Id = "1", Status = "Pending" }
-        };
+        var todo = new Todo { Id = "1", Status = "Pending" };
+        var todos = new List<Todo> { todo };
 
-        _todoRepositoryMock.Setup(r => r.GetTodos()).Returns(todos);
-        _todoRepositoryMock.Setup(r => r.UpdateTodoStatus(It.IsAny<Todo>())).Verifiable();
+        _todoRepositoryMock.Setup(r => r.GetTodosAsync()).ReturnsAsync(todos);
+        _todoRepositoryMock.Setup(r => r.UpdateTodoStatusAsync(It.IsAny<Todo>())).Returns(Task.CompletedTask);
 
         // Act
-        var result = _todoService.UpdateTodoStatus("1", "Completed");
+        var result = await _todoService.UpdateTodoStatusAsync("1", "Completed");
 
         // Assert
+        Assert.NotNull(result);
         Assert.Equal("Completed", result.Status);
-        _todoRepositoryMock.Verify(r => r.UpdateTodoStatus(It.IsAny<Todo>()), Times.Once);
     }
+
+    [Fact]
+    public async Task UpdateTodoStatusAsync_ShouldReturnNull_WhenTodoNotFound()
+    {
+        // Arrange
+        _todoRepositoryMock
+            .Setup(r => r.GetTodosAsync())
+            .ReturnsAsync(new List<Todo>());
+
+        // Act
+        var result = await _todoService.UpdateTodoStatusAsync("999", "Completed");
+
+        // Assert
+        Assert.Null(result);
+        _todoRepositoryMock.Verify(r => r.UpdateTodoStatusAsync(It.IsAny<Todo>()), Times.Never);
+    }
+
+    #endregion async tests
 }

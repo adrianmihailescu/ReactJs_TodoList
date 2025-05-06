@@ -2,6 +2,8 @@ using TodoApp.Domain.Interfaces;
 using TodoApp.Domain.Models;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace TodoApp.Infrastructure.Repositories
@@ -10,20 +12,24 @@ namespace TodoApp.Infrastructure.Repositories
     {
         private const string FilePath = "./data.json";
 
-        public List<Todo> GetTodos()
+        public async Task<List<Todo>> GetTodosAsync()
         {
-            var jsonData = File.ReadAllText(FilePath);
-            return JsonConvert.DeserializeObject<List<Todo>>(jsonData);
+            if (!File.Exists(FilePath))
+                return new List<Todo>();
+
+            var jsonData = await File.ReadAllTextAsync(FilePath);
+            return JsonConvert.DeserializeObject<List<Todo>>(jsonData) ?? new List<Todo>();
         }
 
-        public void UpdateTodoStatus(Todo todo)
+        public async Task UpdateTodoStatusAsync(Todo todo)
         {
-            var todos = GetTodos();
+            var todos = await GetTodosAsync();
             var updatedTodo = todos.FirstOrDefault(t => t.Id == todo.Id);
             if (updatedTodo != null)
             {
                 updatedTodo.Status = todo.Status;
-                File.WriteAllText(FilePath, JsonConvert.SerializeObject(todos, Formatting.Indented));
+                var json = JsonConvert.SerializeObject(todos, Formatting.Indented);
+                await File.WriteAllTextAsync(FilePath, json);
             }
         }
     }

@@ -1,11 +1,12 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TodoApp.Domain.Models;
 
 namespace TodoApp.Domain.Interfaces
 {
     public interface ITodoRepository
     {
-        List<Todo> GetTodos();
-        void UpdateTodoStatus(Todo todo);
+        Task<List<Todo>> GetTodosAsync();
+        Task UpdateTodoStatusAsync(Todo todo);
     }
 }

@@ -12,15 +12,19 @@ namespace TodoApp.Application.Services
     public class TodoService : ITodoService
     {
         private readonly string _filePath = "./data.json";
+        
+        private readonly ITodoRepository _todoRepository;
+
+        public TodoService(ITodoRepository todoRepository)
+        {
+            _todoRepository = todoRepository;
+        }
 
         public async Task<List<Todo>> GetTodosAsync(string type)
         {
-            if (!File.Exists(_filePath))
-                return new List<Todo>();
+            var todos = await _todoRepository.GetTodosAsync();
 
-            var jsonData = await File.ReadAllTextAsync(_filePath);
-            var todos = JsonConvert.DeserializeObject<List<Todo>>(jsonData) ?? new List<Todo>();
-
+            // If a type filter is provided, filter the todos
             if (!string.IsNullOrWhiteSpace(type) && !type.Equals("All", StringComparison.OrdinalIgnoreCase))
             {
                 todos = todos.Where(t => t.Type?.Equals(type, StringComparison.OrdinalIgnoreCase) ?? false).ToList();
@@ -31,20 +35,20 @@ namespace TodoApp.Application.Services
 
         public async Task<Todo> UpdateTodoStatusAsync(string id, string status)
         {
-            if (!File.Exists(_filePath))
-                return null;
+            // Get the list of todos from the repository
+            var todos = await _todoRepository.GetTodosAsync();
 
-            var jsonData = await File.ReadAllTextAsync(_filePath);
-            var todos = JsonConvert.DeserializeObject<List<Todo>>(jsonData) ?? new List<Todo>();
-
+            // Find the todo by its id
             var todo = todos.FirstOrDefault(t => t.Id == id);
+            
             if (todo == null)
                 return null;
 
+            // Update the status of the todo
             todo.Status = status;
 
-            var updatedJson = JsonConvert.SerializeObject(todos, Formatting.Indented);
-            await File.WriteAllTextAsync(_filePath, updatedJson);
+            // Call the repository method to update the status
+            await _todoRepository.UpdateTodoStatusAsync(todo);
 
             return todo;
         }

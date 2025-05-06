@@ -37,17 +37,13 @@ namespace TodoApp.Application.Services
         {
             // Get the list of todos from the repository
             var todos = await _todoRepository.GetTodosAsync();
-
-            // Find the todo by its id
             var todo = todos.FirstOrDefault(t => t.Id == id);
-            
+
             if (todo == null)
                 return null;
-
-            // Update the status of the todo
+                
             todo.Status = status;
-
-            // Call the repository method to update the status
+            
             await _todoRepository.UpdateTodoStatusAsync(todo);
 
             return todo;

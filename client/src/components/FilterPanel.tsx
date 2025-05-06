@@ -3,15 +3,7 @@ import {
   FormControl, Select, MenuItem, InputLabel, Button, Typography, Box
 } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
-
-interface FilterPanelProps {
-  sortOption: string;
-  setSortOption: React.Dispatch<React.SetStateAction<string>>;
-  isDateAsc: boolean;
-  setIsDateAsc: React.Dispatch<React.SetStateAction<boolean>>;
-  typeFilter: string;
-  setTypeFilter: React.Dispatch<React.SetStateAction<string>>;
-}
+import { FilterPanelProps } from '../interfaces/FilterPanelProps';
 
 const FilterPanel: React.FC<FilterPanelProps> = ({
   sortOption,

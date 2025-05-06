@@ -1,52 +1,50 @@
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using TodoApp.Domain.Interfaces;
-using TodoApp.Domain.Models;
+using Microsoft.Extensions.Caching.Memory;
 
-namespace TodoApp.Application.Services
+public class TodoService : ITodoService
 {
-    public class TodoService : ITodoService
+    private readonly ITodoRepository _todoRepository;
+    private readonly IMemoryCache _cache;
+
+    public TodoService(ITodoRepository todoRepository, IMemoryCache cache)
     {
-        private readonly string _filePath = "./data.json";
-        
-        private readonly ITodoRepository _todoRepository;
+        _todoRepository = todoRepository;
+        _cache = cache;
+    }
 
-        public TodoService(ITodoRepository todoRepository)
+    public async Task<List<Todo>> GetTodosAsync(string type)
+    {
+        string cacheKey = $"todos_{type?.ToLower() ?? "all"}";
+
+        if (!_cache.TryGetValue(cacheKey, out List<Todo> todos))
         {
-            _todoRepository = todoRepository;
-        }
+            todos = await _todoRepository.GetTodosAsync();
 
-        public async Task<List<Todo>> GetTodosAsync(string type)
-        {
-            var todos = await _todoRepository.GetTodosAsync();
-
-            // If a type filter is provided, filter the todos
             if (!string.IsNullOrWhiteSpace(type) && !type.Equals("All", StringComparison.OrdinalIgnoreCase))
             {
                 todos = todos.Where(t => t.Type?.Equals(type, StringComparison.OrdinalIgnoreCase) ?? false).ToList();
             }
 
-            return todos;
+            _cache.Set(cacheKey, todos, TimeSpan.FromMinutes(5));
         }
 
-        public async Task<Todo> UpdateTodoStatusAsync(string id, string status)
-        {
-            // Get the list of todos from the repository
-            var todos = await _todoRepository.GetTodosAsync();
-            var todo = todos.FirstOrDefault(t => t.Id == id);
+        return todos;
+    }
 
-            if (todo == null)
-                return null;
-                
-            todo.Status = status;
-            
-            await _todoRepository.UpdateTodoStatusAsync(todo);
+    public async Task<Todo> UpdateTodoStatusAsync(string id, string status)
+    {
+        var todos = await _todoRepository.GetTodosAsync();
+        var todo = todos.FirstOrDefault(t => t.Id == id);
 
-            return todo;
-        }
+        if (todo == null)
+            return null;
+
+        todo.Status = status;
+        await _todoRepository.UpdateTodoStatusAsync(todo);
+
+        // Invalidate the cache since data changed
+        _cache.Remove("todos_all");
+        _cache.Remove($"todos_{todo.Type?.ToLower()}");
+
+        return todo;
     }
 }

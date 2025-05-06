@@ -1,85 +1,65 @@
 ﻿using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Microsoft.Extensions.Caching.Memory;
+using TodoApp.Application.Services;
+using TodoApp.Domain.Models;
+using TodoApp.Domain.Interfaces;
 
-[ApiController]
-[EnableCors("AnyPolicy")]
-[Route("api/todos")]
-public class TodoController : ControllerBase
+namespace TodoApp.API.Controllers
 {
-  private readonly ILogger<TodoController> _logger;
-  private readonly IMemoryCache _cache;
-  private const string CacheKey = "todos";
+    [ApiController]
+    [EnableCors("AnyPolicy")]
+    [Route("api/todos")]
+    public class TodoController : ControllerBase
+    {
+        private readonly ILogger<TodoController> _logger;
+        private readonly IMemoryCache _cache;
+        private readonly ITodoService _todoService;
+        private const string CacheKey = "todos";
 
-  public TodoController(ILogger<TodoController> logger, IMemoryCache cache)
-  {
-    _logger = logger;
-    _cache = cache;
-  }
+        public TodoController(ILogger<TodoController> logger, IMemoryCache cache, ITodoService todoService)
+        {
+            _logger = logger;
+            _cache = cache;
+            _todoService = todoService;
+        }
 
-  [HttpGet]
-  public IEnumerable<Todo> Get([FromQuery] string type)
-  {
-      if (!_cache.TryGetValue(CacheKey, out List<Todo> todos))
-      {
-          using (StreamReader r = new StreamReader("./data.json"))
-          {
-              string json = r.ReadToEnd();
-              todos = JsonConvert.DeserializeObject<List<Todo>>(json);
-              _cache.Set(CacheKey, todos, TimeSpan.FromMinutes(10));
-          }
-      }
+        [HttpGet]
+        public IEnumerable<Todo> Get([FromQuery] string type)
+        {
+            if (!_cache.TryGetValue(CacheKey, out List<Todo> todos))
+            {
+                todos = _todoService.GetTodos(type);
+                _cache.Set(CacheKey, todos, TimeSpan.FromMinutes(10));
+            }
 
-      if (!string.IsNullOrEmpty(type) && type != "All")
-      {
-          todos = todos.Where(t => (t.Type?.Equals(type, StringComparison.OrdinalIgnoreCase)) ?? false).ToList();
-      }
+            return todos;
+        }
 
-      return todos;
-  }
+        [HttpPut("{id}")]
+        public IActionResult Put(string id, [FromBody] Todo updatedTodo)
+        {
+            try
+            {
+                var todo = _todoService.UpdateTodoStatus(id, updatedTodo.Status);
+                if (todo == null)
+                {
+                    return NotFound($"Todo with ID {id} not found.");
+                }
 
-  [HttpPut("{id}")]
-  public IActionResult Put(string id, [FromBody] Todo updatedTodo)
-  {
-      try
-      {
-          var filePath = "./data.json";
+                // Update cache
+                _cache.Set(CacheKey, _todoService.GetTodos("All"), TimeSpan.FromMinutes(10));
 
-          // Read all todos
-          var jsonData = System.IO.File.ReadAllText(filePath);
-          var todos = JsonConvert.DeserializeObject<List<Todo>>(jsonData);
-
-          if (todos == null)
-              return NotFound("Todo list is empty.");
-              
-          var todo = todos.FirstOrDefault(t => t.Id == id);
-
-          if (todo == null)
-              return NotFound($"Todo with ID {id} not found.");
-
-          // Update only allowed fields, like status
-          todo.Status = updatedTodo.Status;
-
-          // Save back to file
-          var updatedJson = JsonConvert.SerializeObject(todos, Formatting.Indented);
-          System.IO.File.WriteAllText(filePath, updatedJson);
-
-          // keep cache valid for 10 minutes
-          _cache.Set(CacheKey, todos, TimeSpan.FromMinutes(10));
-
-          return Ok(todo);
-      }
-      catch (Exception ex)
-      {
-          _logger.LogError(ex, "Failed to update Todo item.");
-          return StatusCode(500, "Internal server error.");
-      }
-  }
-
+                return Ok(todo);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to update Todo item.");
+                return StatusCode(500, "Internal server error.");
+            }
+        }
+    }
 }

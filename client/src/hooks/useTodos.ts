@@ -29,8 +29,8 @@ export function useTodos(
   const filteredSortedTodos = useMemo(() => {
     let filteredItems = [...todos];
 
-    // fix 1.d: Filter todos based on the selected sort option (Active/Done/[All])
-    if (sortOption !== '[All]') {
+    // fix 1.d: Filter todos based on the selected sort option (Active/Done/All)
+    if (sortOption !== 'All') {
       filteredItems = filteredItems.filter(todo => todo.status === sortOption);
     }
 

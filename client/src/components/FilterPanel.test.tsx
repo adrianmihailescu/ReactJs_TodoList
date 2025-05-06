@@ -4,7 +4,7 @@ import '@testing-library/jest-dom';
 
 describe('FilterPanel', () => {
   const defaultFilters = {
-    sortOption: '[All]',
+    sortOption: 'All',
     isDateAsc: false,
     typeFilter: 'All',
   };

@@ -30,10 +30,14 @@ namespace TodoApp.API.Controllers
         [HttpGet]
         public IEnumerable<Todo> Get([FromQuery] string type)
         {
-            if (!_cache.TryGetValue(CacheKey, out List<Todo> todos))
+            var cacheKey = string.IsNullOrWhiteSpace(type) || type.Equals("All", StringComparison.OrdinalIgnoreCase)
+                ? "todos_all"
+                : $"todos_type_{type.ToLower()}";
+
+            if (!_cache.TryGetValue(cacheKey, out List<Todo> todos))
             {
                 todos = _todoService.GetTodos(type);
-                _cache.Set(CacheKey, todos, TimeSpan.FromMinutes(10));
+                _cache.Set(cacheKey, todos, TimeSpan.FromMinutes(10));
             }
 
             return todos;
@@ -49,6 +53,12 @@ namespace TodoApp.API.Controllers
                 {
                     return NotFound($"Todo with ID {id} not found.");
                 }
+
+
+                _cache.Remove("todos_all");
+                _cache.Remove("todos_type_results");
+                _cache.Remove("todos_type_wins");
+                _cache.Remove("todos_type_withdraw");
 
                 // Update cache
                 _cache.Set(CacheKey, _todoService.GetTodos("All"), TimeSpan.FromMinutes(10));

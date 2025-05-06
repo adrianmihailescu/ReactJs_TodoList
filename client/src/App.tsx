@@ -12,7 +12,7 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const [filters, setFilters] = useState({
-    sortOption: '[All]',
+    sortOption: 'All',
     typeFilter: 'All',
     isDateAsc: false,
   });

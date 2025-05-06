@@ -39,7 +39,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, setFilters }) => {
           onChange={handleSortOptionChange}
           label="Status"
         >
-          <MenuItem value="[All]">[All]</MenuItem>
+          <MenuItem value="All">All</MenuItem>
           <MenuItem value="Active">Active</MenuItem>
           <MenuItem value="Done">Done</MenuItem>
         </Select>

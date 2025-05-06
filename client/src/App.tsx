@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Box, Grid, Pagination } from '@mui/material';
+import React, {useState } from 'react';
+import { Box, Grid, Pagination, CircularProgress } from '@mui/material';
 import FilterPanel from './components/FilterPanel';
 import TodoCard from './components/TodoCard';
 import { Todo } from './models/todo';
@@ -22,6 +22,7 @@ export default function App() {
     setTodos,
     paginatedTodos,
     totalPages,
+    loading
   } = useTodos(filters.typeFilter, filters.sortOption, filters.isDateAsc, currentPage);
 
   const updateTodoStatus = async (todo: Todo, newStatus: string) => {
@@ -51,11 +52,28 @@ export default function App() {
         filters={filters}
         setFilters={setFilters}
       />
-
-      {/* ToDo List */}
-      <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 2 }}>
+      
+      {/* ToDo List */}  
+  <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 2 }}>
+    {loading ? (
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100%', // full height of parent
+          mt: 4,
+        }}
+      >
+        <Box sx={{ mb: 2, fontSize: '1.2rem' }}>Loading TODOs...</Box>
+        <CircularProgress />
+      </Box>
+    ) : paginatedTodos.length === 0 ? (
+      <Box sx={{ textAlign: 'center', mt: 4 }}>No TODOs found.</Box>
+    ) : (
+      <>
         <Grid container spacing={2}>
-          {/* render from paginatedTodos */}
           {paginatedTodos.map((todo, index) => (
             <Grid item xs={12} md={6} key={todo.id ?? index}>
               <TodoCard
@@ -67,16 +85,17 @@ export default function App() {
             </Grid>
           ))}
         </Grid>
-
-        {/* Pagination */}
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-          <Pagination
-            count={totalPages}
-            page={currentPage}
-            onChange={(_, page) => setCurrentPage(page)}
-            color="primary"
-          />
-        </Box>
+            {/* Pagination */}
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+              <Pagination
+                count={totalPages}
+                page={currentPage}
+                onChange={(_, page) => setCurrentPage(page)}
+                color="primary"
+              />
+            </Box>
+          </>
+        )}
       </Box>
     </Box>
   );

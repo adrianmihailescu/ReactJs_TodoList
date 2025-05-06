@@ -10,16 +10,21 @@ export function useTodos(
   currentPage: number
 ) {
   const [todos, setTodos] = useState<Todo[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // fix 2.c: Use hook to fetch todos when typeFilter changes
   useEffect(() => {
     const loadTodos = async () => {
       try {
+        setLoading(true);
         const data = await fetchTodos(typeFilter);
         localStorage.setItem('todos', JSON.stringify(data));
         setTodos(data);
       } catch (err) {
         console.error('Failed to load todos:', err);
+      }
+      finally {
+        setLoading(false);
       }
     };
     loadTodos();
@@ -61,5 +66,6 @@ export function useTodos(
     paginatedTodos,
     totalPages,
     itemsPerPage,
+    loading
   };
 }

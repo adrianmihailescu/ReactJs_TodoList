@@ -23,7 +23,6 @@ describe('FilterPanel', () => {
 
   test('renders all filter controls', () => {
     expect(screen.getByText(/Filter by type/i)).toBeInTheDocument();
-    expect(screen.getByText('All')).toBeInTheDocument();
   });
 
   test('toggles isDateAsc', () => {

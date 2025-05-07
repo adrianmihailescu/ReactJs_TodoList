@@ -1,4 +1,4 @@
-import { Todo } from '../models/todo';
+import { Todo } from './../models/todo';
 import { baseUrl } from './../config';
 
 export async function updateTodoStatus(todo: Todo, newStatus: string) {

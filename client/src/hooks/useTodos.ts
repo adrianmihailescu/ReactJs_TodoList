@@ -1,71 +1,45 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Todo } from '../models/todo';
+import { useQuery } from '@tanstack/react-query'; // fix 2.b optimize database access with caching
 import { fetchTodos } from '../services/todoService';
 import { itemsPerPage } from './../config';
 
-export function useTodos(
+export const useTodos = (
   typeFilter: string,
   sortOption: string,
   isDateAsc: boolean,
   currentPage: number
-) {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [loading, setLoading] = useState(true);
+) => {
+  // fix 2.b: Caching Fetch and cache todos using React Query
+  const { data: todos = [], isLoading, refetch } = useQuery({
+    queryKey: ['todos', typeFilter], // fix 1.h: Cache key includes typeFilter
+    queryFn: () => fetchTodos(typeFilter),
+    staleTime: 5 * 60 * 1000, // fix 1.i: Cache expiration time (5 minutes)
+  });
 
-  // fix 2.c: Use hook to fetch todos when typeFilter changes
-  useEffect(() => {
-    const loadTodos = async () => {
-      try {
-        setLoading(true);
-        const data = await fetchTodos(typeFilter);
-        localStorage.setItem('todos', JSON.stringify(data));
-        setTodos(data);
-      } catch (err) {
-        console.error('Failed to load todos:', err);
-      }
-      finally {
-        setLoading(false);
-      }
-    };
-    loadTodos();
-  }, [typeFilter]);
-
-  // fix 1.f: Filter and sort the todos based on the selected sort option and date
-  const filteredSortedTodos = useMemo(() => {
-    let filteredItems = [...todos];
-
-    // fix 1.d: Filter todos based on the selected sort option (Active/Done/All)
-    if (sortOption !== 'All') {
-      filteredItems = filteredItems.filter(todo => todo.status === sortOption);
+  // fix 1.d, 1.f: Sorting
+  let sortedTodos = [...todos];
+  if (sortOption !== 'All') {
+    if (sortOption === 'Status') {
+      sortedTodos.sort((a, b) => a.status.localeCompare(b.status));
+    } else if (sortOption === 'Title') {
+      sortedTodos.sort((a, b) => a.title.localeCompare(b.title));
     }
+  }
 
-    // fix 1.f: Sort todos by date based on ascending or descending order
-    filteredItems.sort((a, b) => {
-      const dateA = new Date(a.dueDate ?? a.creationTime);
-      const dateB = new Date(b.dueDate ?? b.creationTime);
-      return isDateAsc
-        ? dateA.getTime() - dateB.getTime()
-        : dateB.getTime() - dateA.getTime();
-    });
-
-    return filteredItems;
-  }, [todos, sortOption, isDateAsc]);
+  // fix 1.d, 1.f: Sort todos by date based on ascending or descending order
+  if (isDateAsc) {
+    sortedTodos.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+  } else {
+    sortedTodos.sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime());
+  }
 
   // fix 2.a: Paginate the todos after applying the sorting and filtering
-  const start = (currentPage - 1) * itemsPerPage;
-  const paginatedTodos = useMemo(() => {
-    return filteredSortedTodos.slice(start, start + itemsPerPage);
-  }, [filteredSortedTodos, currentPage]);
-
-  const totalPages = Math.ceil(filteredSortedTodos.length / itemsPerPage);
+  const paginatedTodos = sortedTodos.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.ceil(sortedTodos.length / itemsPerPage);
 
   return {
-    todos,
-    setTodos,
-    filteredSortedTodos,
     paginatedTodos,
     totalPages,
-    itemsPerPage,
-    loading
+    loading: isLoading,
+    refetch, // refetch function from useQuery
   };
-}
+};

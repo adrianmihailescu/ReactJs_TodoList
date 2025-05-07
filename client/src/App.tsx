@@ -5,7 +5,7 @@ import TodoCard from './components/TodoCard';
 import { Todo } from './models/todo';
 import './App.css';
 import { useTodos } from './hooks/useTodos';
-import { baseUrl } from './config';
+import { updateTodoStatus } from './services/todoService';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -24,24 +24,10 @@ export default function App() {
     refetch, // fix 2.b: Use React Query's refetch method to fetch updated todos
   } = useTodos(filters.typeFilter, filters.sortOption, filters.isDateAsc, currentPage);
 
-  const updateTodoStatus = async (todo: Todo, newStatus: string) => {
-    try {
-      const updatedTodo = { ...todo, status: newStatus };
-      const res = await fetch(`${baseUrl}/${todo.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedTodo),
-      });
-
-      if (!res.ok) {
-        console.error("Failed to update status", res.statusText);
-        return;
-      }
-
-      // fix 2.c: Trigger a refetch to ensure the UI is updated after a status change
+  const handleUpdateTodoStatus = async (todo: Todo, newStatus: string) => {
+    const success = await updateTodoStatus(todo, newStatus);
+    if (success) {
       await refetch();
-    } catch (err) {
-      console.error('Error updating status:', err);
     }
   };
 
@@ -79,7 +65,7 @@ export default function App() {
                     <TodoCard
                       todo={todo}
                       index={index}
-                      updateTodoStatus={updateTodoStatus}
+                      updateTodoStatus={handleUpdateTodoStatus}
                       currentPage={currentPage}
                     />
                   </Grid>

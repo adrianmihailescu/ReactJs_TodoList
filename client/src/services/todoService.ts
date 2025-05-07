@@ -21,20 +21,30 @@ export async function updateTodoStatus(todo: Todo, newStatus: string) {
   }
 }
 
-export const fetchTodos = async (typeFilter: string) => {
-  
-    try {
-      const result = await fetch(`${baseUrl}?type=${typeFilter}`);
-      const data = await result.json();
-  
-      if (!result.ok) {
-        throw new Error(data.message || 'Failed to fetch todos');
-      }
-  
-      return data;
-    } catch (err) {
-      console.error('Failed to fetch todos:', err);
-      throw err;
+export const fetchTodos = async (typeFilter: string, sortOption: string) => {
+  try {
+    const result = await fetch(`${baseUrl}?type=${typeFilter}`);
+    const data = await result.json();
+
+    if (!result.ok) {
+      throw new Error(data.message || 'Failed to fetch todos');
     }
-  };
+
+    // Apply sorting logic here
+    if (sortOption && sortOption !== 'All') {
+      data.sort((a: Todo, b: Todo) => {
+        const statusA = a.status.toLowerCase();
+        const statusB = b.status.toLowerCase();
+        return sortOption === 'Asc'
+          ? statusA.localeCompare(statusB)
+          : statusB.localeCompare(statusA);
+      });
+    }
+
+    return data;
+  } catch (err) {
+    console.error('Failed to fetch todos:', err);
+    throw err;
+  }
+};
   

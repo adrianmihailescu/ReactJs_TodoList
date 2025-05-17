@@ -1,4 +1,3 @@
-# TheLotter TODOs Exam
 ![image](https://github.com/user-attachments/assets/744e0bb2-7416-4951-b151-463ed6e73222)
 ![image](https://github.com/user-attachments/assets/85608192-8d65-4ad1-84f0-3c9863eeb158)
 

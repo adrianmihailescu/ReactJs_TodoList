@@ -21,11 +21,11 @@ The application is built on a modern tech stack featuring a React frontend for r
 1. Install the project dependencies:
    ```bash
    # In the project root
-   npm i
+   npm install
    
    # In the client directory
    cd client
-   npm i
+   npm install
    ```
 
 2. Run the project:
